@@ -8,5 +8,3 @@ build/
 .omc/
 site/dist/
 site/site.json
-docs/archive/site/dist/
-docs/archive/site/site.json
