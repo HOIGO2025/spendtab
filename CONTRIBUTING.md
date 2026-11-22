@@ -1,6 +1,6 @@
 # Contributing
 
-TokenTab is MIT-licensed. Bug reports, tests, docs, and focused pull requests are
+SpendTab is MIT-licensed. Bug reports, tests, docs, and focused pull requests are
 welcome.
 
 ## Ground rules
@@ -16,8 +16,8 @@ welcome.
 
 ```bash
 python3 -m unittest discover -s tests -t . -v
-python3 examples/make_demo.py --dir /tmp/tokentab-demo --force
-python3 -m tokentab --root /tmp/tokentab-demo/projects --no-cache
+python3 examples/make_demo.py --dir /tmp/spendtab-demo --force
+python3 -m spendtab --root /tmp/spendtab-demo/projects --no-cache
 python3 -m pip wheel --no-deps -w /tmp/dist .
 ```
 
@@ -33,7 +33,7 @@ Test on Python 3.9 if you change parsing or typing. CI runs 3.9, 3.11–3.14.
 
 ## Reporting bugs
 
-Use the bug report template. Include the TokenTab version, Python version, OS, the
+Use the bug report template. Include the SpendTab version, Python version, OS, the
 command, and a synthetic reproduction. Redact prompts, paths, and costs.
 
 Security issues: use GitHub's private security advisory, not a public issue. See

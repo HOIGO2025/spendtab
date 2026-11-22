@@ -39,9 +39,9 @@ jobs:
         run: |
           python -m venv /tmp/venv
           /tmp/venv/bin/pip install /tmp/dist/*.whl
-          /tmp/venv/bin/tokentab --version
+          /tmp/venv/bin/spendtab --version
           python examples/make_demo.py --dir /tmp/demo --force
-          /tmp/venv/bin/tokentab --root /tmp/demo/projects --no-cache --json > /tmp/report.json
+          /tmp/venv/bin/spendtab --root /tmp/demo/projects --no-cache --json > /tmp/report.json
           python - <<'PY'
           import json
           data = json.load(open("/tmp/report.json"))
@@ -57,7 +57,7 @@ jobs:
           cat > /tmp/session.jsonl <<'JSONL'
           {"type": "cost-state", "sessionId": "s1", "totalCostUSD": 2.5}
           JSONL
-          printf '%s' '{"session_id":"s1","cwd":"/tmp","tool_name":"Bash","transcript_path":"/tmp/session.jsonl"}' | /tmp/venv/bin/tokentab hook pretooluse --config /tmp/guard.json --ledger /tmp/ledger.jsonl --dry-run > /tmp/decision.json
+          printf '%s' '{"session_id":"s1","cwd":"/tmp","tool_name":"Bash","transcript_path":"/tmp/session.jsonl"}' | /tmp/venv/bin/spendtab hook pretooluse --config /tmp/guard.json --ledger /tmp/ledger.jsonl --dry-run > /tmp/decision.json
           python - <<'PY'
           import json
           decision = json.load(open("/tmp/decision.json"))

@@ -12,7 +12,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: TokenTab version
+      label: SpendTab version
       placeholder: "0.2.0"
     validations:
       required: true
@@ -27,7 +27,7 @@ body:
     id: command
     attributes:
       label: Command and flags
-      placeholder: "tokentab --since 7d --json"
+      placeholder: "spendtab --since 7d --json"
     validations:
       required: true
   - type: textarea

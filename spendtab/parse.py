@@ -313,7 +313,7 @@ def load_sessions(
 
 def default_cache_path() -> str:
     base = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
-    return os.path.join(base, "tokentab", "index.json")
+    return os.path.join(base, "spendtab", "index.json")
 
 
 def _unchanged(path: str, stat) -> bool:

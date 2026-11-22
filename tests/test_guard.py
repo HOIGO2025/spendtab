@@ -6,7 +6,7 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timedelta, timezone
 
-from tokentab.guard import (
+from spendtab.guard import (
     Config,
     Event,
     append_event,
@@ -16,7 +16,7 @@ from tokentab.guard import (
     read_events,
     read_last_cost,
 )
-from tokentab.hook import guard_init, handle_pretooluse
+from spendtab.hook import guard_init, handle_pretooluse
 
 NOW = datetime(2026, 11, 23, 12, 0, tzinfo=timezone.utc)
 
@@ -174,7 +174,7 @@ class EvaluateTests(unittest.TestCase):
         self.assertTrue(decision.allowed)
         self.assertFalse(decision.blocked)
         self.assertIsNotNone(decision.reason)
-        from tokentab.guard import render_check
+        from spendtab.guard import render_check
 
         self.assertIn("WARN", render_check(decision))
 
@@ -356,7 +356,7 @@ class HookTests(unittest.TestCase):
         path = os.path.join(self.tmp.name, "badwebhook.json")
         with open(path, "w", encoding="utf-8") as handle:
             json.dump({"webhook_url": "http://127.0.0.1:8080x/hook"}, handle)
-        from tokentab.guard import load_config
+        from spendtab.guard import load_config
 
         config = load_config(path)
         self.assertIsNotNone(config)

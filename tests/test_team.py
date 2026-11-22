@@ -7,10 +7,10 @@ from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
 from unittest.mock import patch
 
-from tokentab.guard import Config, Event, append_event, read_events
-from tokentab.hook import handle_pretooluse
-from tokentab.team import build_team_report, incremental_events, render_team
-from tokentab.cli import main
+from spendtab.guard import Config, Event, append_event, read_events
+from spendtab.hook import handle_pretooluse
+from spendtab.team import build_team_report, incremental_events, render_team
+from spendtab.cli import main
 
 NOW = datetime(2026, 11, 23, 12, 0, tzinfo=timezone.utc)
 
@@ -148,7 +148,7 @@ class GuardReportCliTests(unittest.TestCase):
         with redirect_stdout(out):
             code = main(["guard", "report", "--ledger", self.ledger])
         self.assertEqual(code, 0)
-        self.assertIn("TokenTab guard ledger", out.getvalue())
+        self.assertIn("SpendTab guard ledger", out.getvalue())
 
     def test_report_csv(self):
         import csv
@@ -203,7 +203,7 @@ class WebhookTests(unittest.TestCase):
         return code
 
     def test_webhook_fires_once_per_state_change(self):
-        with patch("tokentab.hook.urllib.request.urlopen") as urlopen:
+        with patch("spendtab.hook.urllib.request.urlopen") as urlopen:
             urlopen.return_value.__enter__.return_value.read.return_value = b""
             self.assertEqual(self.call(), 2)
             self.assertEqual(self.call(), 2)
@@ -223,7 +223,7 @@ class WebhookTests(unittest.TestCase):
                 },
                 handle,
             )
-        with patch("tokentab.hook.urllib.request.urlopen") as urlopen:
+        with patch("spendtab.hook.urllib.request.urlopen") as urlopen:
             self.assertEqual(self.call(), 2)
         urlopen.assert_not_called()
 

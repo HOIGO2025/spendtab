@@ -1,7 +1,22 @@
 # Changelog
 
 All notable changes are recorded here. The project follows semantic versioning for
-the CLI and the JSON output schema.
+the CLI and the JSON output schema. SpendTab was formerly TokenTab; entries before
+0.3.0 use the old name.
+
+## 0.3.0 — 2026-11-23
+
+### Changed
+
+- Renamed the distribution, import package, and command from `tokentab` to
+  `spendtab` (`SpendTab`). PyPI's `tokentab` name belongs to an unrelated project.
+- Local paths moved to `~/.cache/spendtab`, `~/.config/spendtab`, and
+  `~/.local/state/spendtab`. Existing TokenTab caches, guard configs, and ledgers are
+  not migrated; re-run `spendtab guard init` or copy the files manually.
+- Environment variables renamed: `TOKENTAB_GUARD_CONFIG` → `SPENDTAB_GUARD_CONFIG`,
+  `TOKENTAB_STATE_DIR` → `SPENDTAB_STATE_DIR`, `TOKENTAB_NO_CACHE` →
+  `SPENDTAB_NO_CACHE`.
+- JSON output now reports `"tool": "spendtab"`. The schema version is unchanged.
 
 ## 0.2.0 — 2026-11-23
 

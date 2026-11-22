@@ -71,7 +71,7 @@ class TeamReport:
             ]
 
         return {
-            "tool": "tokentab",
+            "tool": "spendtab",
             "schema": 1,
             "kind": "guard_report",
             "window": {"start": self.since_day, "end": self.through_day},
@@ -179,7 +179,7 @@ def render_team(report: TeamReport) -> str:
         return f"${value:,.2f}"
 
     lines = [
-        f"TokenTab guard ledger — {report.since_day} → {report.through_day}",
+        f"SpendTab guard ledger — {report.since_day} → {report.through_day}",
         "",
         f"total     {money(report.total_usd)} across {report.sessions} session(s)",
         f"blocks    {report.blocks}",

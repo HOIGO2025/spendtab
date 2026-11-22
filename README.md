@@ -1,4 +1,4 @@
-# TokenTab
+# SpendTab
 
 Spend audit and budget guard for Claude Code. Reads your local session transcripts
 and answers: **how much did I spend, on what, and where is money leaking?** Then it
@@ -14,14 +14,14 @@ Claude Code-specific support may be limited; see `CONTRIBUTING.md`.
 
 Three surfaces:
 
-- `tokentab` — the report: totals, projects, models, cache efficiency, anomalies.
-- `tokentab guard` / `tokentab hook pretooluse` — enforcement: a PreToolUse hook that
+- `spendtab` — the report: totals, projects, models, cache efficiency, anomalies.
+- `spendtab guard` / `spendtab hook pretooluse` — enforcement: a PreToolUse hook that
   exits 2 and blocks the tool call when a budget is exceeded.
-- `tokentab guard report` — the ledger: spend by developer, project, and day, plus
+- `spendtab guard report` — the ledger: spend by developer, project, and day, plus
   blocked calls, for invoices and team attribution.
 
 ```
-TokenTab — Claude Code spend audit
+SpendTab — Claude Code spend audit
 
 sessions  4 total · 4 priced · 0 unpriced
 window    2026-10-23 → 2026-11-22
@@ -56,24 +56,24 @@ pipx install .
 uv tool install .
 
 # or run without installing
-python3 -m tokentab
+python3 -m spendtab
 ```
 
 ## Usage
 
 ```bash
-tokentab                          # all sessions, all projects
-tokentab --since 30d              # last 30 days
-tokentab --since 2026-10-01       # from a date
-tokentab --project myapp          # substring on project name or path
-tokentab --json                   # stable machine-readable output
-tokentab --csv                    # one row per session, for invoices/exports
-tokentab --top 20                 # more sessions in the table
-tokentab --fail-over 500          # exit 3 if spend exceeds $500 (CI/cron guard)
-tokentab --no-color --no-cache
+spendtab                          # all sessions, all projects
+spendtab --since 30d              # last 30 days
+spendtab --since 2026-10-01       # from a date
+spendtab --project myapp          # substring on project name or path
+spendtab --json                   # stable machine-readable output
+spendtab --csv                    # one row per session, for invoices/exports
+spendtab --top 20                 # more sessions in the table
+spendtab --fail-over 500          # exit 3 if spend exceeds $500 (CI/cron guard)
+spendtab --no-color --no-cache
 
-tokentab guard report             # ledger spend by dev/project/day (last 7 days)
-tokentab guard report --days 30 --json
+spendtab guard report             # ledger spend by dev/project/day (last 7 days)
+spendtab guard report --days 30 --json
 ```
 
 `--since` accepts `7d`, `36h`, `4w`, or `YYYY-MM-DD`.
@@ -81,10 +81,10 @@ tokentab guard report --days 30 --json
 ## Guard: stop the next overspend
 
 ```bash
-tokentab guard init
+spendtab guard init
 ```
 
-This writes `~/.config/tokentab/guard.json` and prints a hook snippet. The starter
+This writes `~/.config/spendtab/guard.json` and prints a hook snippet. The starter
 file uses `"mode": "warn"` so installing it cannot block work on the first day;
 switch to `"block"` after a week of observing the warnings. Add the snippet to
 `.claude/settings.local.json` (this project) or `~/.claude/settings.json` (all
@@ -97,7 +97,7 @@ projects):
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "tokentab hook pretooluse" }
+          { "type": "command", "command": "spendtab hook pretooluse" }
         ]
       }
     ]
@@ -108,7 +108,7 @@ projects):
 Verify against a live transcript without blocking anything:
 
 ```bash
-tokentab guard check --transcript ~/.claude/projects/<project>/<session>.jsonl \
+spendtab guard check --transcript ~/.claude/projects/<project>/<session>.jsonl \
   --project "$PWD"
 ```
 
@@ -135,11 +135,11 @@ How enforcement works:
   stdin. It reads the last `cost-state` snapshot from the transcript, evaluates the
   three budgets, appends a ledger row, and exits 2 with the reason on stderr when a
   budget is crossed. Claude Code blocks that tool call.
-- Daily and project totals come from `~/.local/state/tokentab/ledger.jsonl`, using
+- Daily and project totals come from `~/.local/state/spendtab/ledger.jsonl`, using
   the newest snapshot per session — repeated hook calls never double-count.
 - Missing config, unreadable transcript, or unknown spend fails open: the call is
   allowed. A guard that bricks work is worse than a missed block.
-- `tokentab hook pretooluse --dry-run` prints the decision and writes nothing.
+- `spendtab hook pretooluse --dry-run` prints the decision and writes nothing.
 - Webhooks fire once per state change (allow→warn→block), not on every blocked
   call, so a runaway session cannot flood the channel. Failure to deliver is
   ignored; the tool call decision is unaffected. The payload contains the budget
@@ -150,13 +150,13 @@ How enforcement works:
 ## Team ledger
 
 ```bash
-tokentab guard report              # last 7 days
-tokentab guard report --days 30
-tokentab guard report --json
-tokentab guard report --csv        # grouped rows: dev/project/day
+spendtab guard report              # last 7 days
+spendtab guard report --days 30
+spendtab guard report --json
+spendtab guard report --csv        # grouped rows: dev/project/day
 ```
 
-Every hook run appends a ledger row (`~/.local/state/tokentab/ledger.jsonl`) with the
+Every hook run appends a ledger row (`~/.local/state/spendtab/ledger.jsonl`) with the
 dev label, project, tool, cumulative session cost, and decision. The report converts
 cumulative snapshots into per-event deltas, so a long session is not counted in full
 every day. Rows older than 30 days are pruned when the ledger passes 8 MB.
@@ -178,8 +178,8 @@ Hook limits that matter:
 ## Try the demo
 
 ```bash
-python3 examples/make_demo.py --dir /tmp/tokentab-demo
-tokentab --root /tmp/tokentab-demo/projects --no-cache
+python3 examples/make_demo.py --dir /tmp/spendtab-demo
+spendtab --root /tmp/spendtab-demo/projects --no-cache
 ```
 
 The demo writes five synthetic sessions with invented costs; it never reads real
@@ -188,7 +188,7 @@ transcripts.
 ## What it reads
 
 `~/.claude/projects/**/*.jsonl` — the transcripts Claude Code already writes.
-TokenTab only extracts:
+SpendTab only extracts:
 
 - `cost-state` records: per-session cost, per-model token usage, 1h/5m cache
   split, durations, unknown-model flags
@@ -213,10 +213,10 @@ proven dollar saving.
 ## Cache
 
 First scan parses every transcript; subsequent scans reuse a local index at
-`~/.cache/tokentab/index.json` (or `$XDG_CACHE_HOME/tokentab/index.json`) keyed by
+`~/.cache/spendtab/index.json` (or `$XDG_CACHE_HOME/spendtab/index.json`) keyed by
 file mtime, size, and a head/tail fingerprint so a rewrite that preserves timestamps
 is still re-parsed. Deleting the file is safe. Disable with `--no-cache` or
-`TOKENTAB_NO_CACHE=1`.
+`SPENDTAB_NO_CACHE=1`.
 
 Measured on a 68-file / 206k-line transcript corpus: **14s first scan, 0.3s
 cached**.
@@ -226,7 +226,7 @@ cached**.
 | Code | Meaning |
 |---|---|
 | 0 | report printed / call allowed |
-| 1 | `tokentab guard check` found a blocked state |
+| 1 | `spendtab guard check` found a blocked state |
 | 2 | bad arguments, transcript root missing, or hook blocked the tool call |
 | 3 | total spend exceeded `--fail-over` |
 
@@ -234,7 +234,7 @@ cached**.
 
 - Claude Code must write `cost-state` records. Sessions from older versions
   appear as unpriced and are excluded from totals.
-- Costs come from the transcript's own pricing. TokenTab does not apply its own
+- Costs come from the transcript's own pricing. SpendTab does not apply its own
   price table, so unknown models are flagged rather than guessed.
 - Cost state is cumulative; the last snapshot in a transcript wins.
 - A session id repeated across transcript files (copies, resumed transcripts) is
@@ -260,5 +260,5 @@ issue.
 ## License
 
 MIT. See `LICENSE`. Data handling and the threat model are documented in
-`SECURITY.md`. TokenTab is not affiliated with or endorsed by Anthropic; use it only
+`SECURITY.md`. SpendTab is not affiliated with or endorsed by Anthropic; use it only
 where the services it reads are permitted to you.

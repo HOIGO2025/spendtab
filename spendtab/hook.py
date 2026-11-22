@@ -2,7 +2,7 @@
 
 Wire with:
 
-    tokentab hook pretooluse
+    spendtab hook pretooluse
 
 The hook reads Claude Code's JSON on stdin. It exits 2 to block a tool call when
 a budget is exceeded, 0 otherwise. Any internal failure allows the call.
@@ -127,7 +127,7 @@ def handle_pretooluse(
         return 2
     if not decision.allowed:
         print(
-            "TokenTab guard warning: " + (decision.reason or "budget exceeded"),
+            "SpendTab guard warning: " + (decision.reason or "budget exceeded"),
             file=sys.stderr,
         )
     return 0
@@ -144,7 +144,7 @@ def _notify(config, decision) -> None:
     text = (
         block_message(decision)
         if decision.blocked
-        else "TokenTab guard warning: " + decision.reason
+        else "SpendTab guard warning: " + decision.reason
     )
     body = json.dumps(
         {"text": text, "dev": config.dev}
@@ -174,7 +174,7 @@ def guard_check(
     config = load_config(config_file)
     if config is None:
         print(
-            "TokenTab guard: no config found. Run `tokentab guard init` first.",
+            "SpendTab guard: no config found. Run `spendtab guard init` first.",
             file=sys.stderr,
         )
         return 2
@@ -214,7 +214,7 @@ SETTINGS_SNIPPET = {
             {
                 "matcher": "*",
                 "hooks": [
-                    {"type": "command", "command": "tokentab hook pretooluse"}
+                    {"type": "command", "command": "spendtab hook pretooluse"}
                 ],
             }
         ]
@@ -227,7 +227,7 @@ def guard_init(config_file: Optional[str], force: bool = False) -> int:
 
     path = config_file or config_path()
     if os.path.exists(path) and not force:
-        print(f"TokenTab guard: config already exists at {path}", file=sys.stderr)
+        print(f"SpendTab guard: config already exists at {path}", file=sys.stderr)
         return 1
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as handle:
@@ -237,7 +237,7 @@ def guard_init(config_file: Optional[str], force: bool = False) -> int:
     print("\nAdd this to your project's .claude/settings.local.json:\n")
     print(json.dumps(SETTINGS_SNIPPET, indent=2))
     print(
-        "\nThen run `tokentab guard check --transcript <path>` to verify, and "
-        "`tokentab guard init --force` after editing budgets."
+        "\nThen run `spendtab guard check --transcript <path>` to verify, and "
+        "`spendtab guard init --force` after editing budgets."
     )
     return 0

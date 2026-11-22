@@ -80,7 +80,7 @@ class Report:
 
     def to_dict(self, top: int = 10) -> Dict[str, object]:
         return {
-            "tool": "tokentab",
+            "tool": "spendtab",
             "schema": 1,
             "root": self.root,
             "generated_at": self.generated_at.isoformat(),

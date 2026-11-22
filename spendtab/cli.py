@@ -1,4 +1,4 @@
-"""Command-line entry point: ``tokentab``."""
+"""Command-line entry point: ``spendtab``."""
 
 from __future__ import annotations
 
@@ -21,10 +21,10 @@ from .team import build_team_report, render_team
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="tokentab",
+        prog="spendtab",
         description=(
             "Audit Claude Code spend and enforce budgets. "
-            "Run `tokentab guard init` to set up the PreToolUse hook."
+            "Run `spendtab guard init` to set up the PreToolUse hook."
         ),
     )
     parser.add_argument(
@@ -77,14 +77,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="re-parse every transcript instead of using the local mtime cache",
     )
     parser.add_argument(
-        "--version", action="version", version=f"tokentab {__version__}"
+        "--version", action="version", version=f"spendtab {__version__}"
     )
     return parser
 
 
 def _dispatch_hook(argv: List[str]) -> int:
     parser = argparse.ArgumentParser(
-        prog="tokentab hook",
+        prog="spendtab hook",
         description="Claude Code hook entry points.",
     )
     parser.add_argument("event", choices=["pretooluse"])
@@ -100,7 +100,7 @@ def _dispatch_hook(argv: List[str]) -> int:
     try:
         payload = json.loads(raw) if raw.strip() else {}
     except ValueError:
-        print("tokentab hook: invalid JSON on stdin; allowing call", file=sys.stderr)
+        print("spendtab hook: invalid JSON on stdin; allowing call", file=sys.stderr)
         return 0
     if not isinstance(payload, dict):
         return 0
@@ -115,7 +115,7 @@ def _dispatch_hook(argv: List[str]) -> int:
 def _dispatch_guard(argv: List[str]) -> int:
     if argv and argv[0] == "report":
         parser = argparse.ArgumentParser(
-            prog="tokentab guard report",
+            prog="spendtab guard report",
             description="Spend from the guard ledger, by developer, project, and day.",
         )
         parser.add_argument("--days", type=int, default=7, help="window length (default 7)")
@@ -154,7 +154,7 @@ def _dispatch_guard(argv: List[str]) -> int:
 
     if argv and argv[0] == "init":
         parser = argparse.ArgumentParser(
-            prog="tokentab guard init",
+            prog="spendtab guard init",
             description="Write a starter guard config and print the hook snippet.",
         )
         parser.add_argument("--config", default=None, help="config path to write")
@@ -163,7 +163,7 @@ def _dispatch_guard(argv: List[str]) -> int:
         return guard_init(args.config, force=args.force)
 
     parser = argparse.ArgumentParser(
-        prog="tokentab guard",
+        prog="spendtab guard",
         description="Check current spend against guard budgets.",
     )
     parser.add_argument(
@@ -250,7 +250,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     root = os.path.abspath(os.path.expanduser(args.root))
     if not os.path.isdir(root):
-        print(f"tokentab: transcript root not found: {root}", file=sys.stderr)
+        print(f"spendtab: transcript root not found: {root}", file=sys.stderr)
         return 2
 
     try:
@@ -267,14 +267,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     sessions = load_sessions(
         root,
         use_cache=not args.no_cache
-        and os.environ.get("TOKENTAB_NO_CACHE", "").lower() not in ("1", "true", "yes"),
+        and os.environ.get("SPENDTAB_NO_CACHE", "").lower() not in ("1", "true", "yes"),
     )
 
     if args.csv:
         total = _emit_csv(sessions, since, args.project)
         if args.fail_over is not None and total > args.fail_over:
             print(
-                f"tokentab: spend {total:.2f} exceeds --fail-over "
+                f"spendtab: spend {total:.2f} exceeds --fail-over "
                 f"{args.fail_over:.2f}",
                 file=sys.stderr,
             )
@@ -298,7 +298,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.fail_over is not None and report.total_cost_usd > args.fail_over:
         print(
-            f"tokentab: spend {report.total_cost_usd:.2f} exceeds --fail-over "
+            f"spendtab: spend {report.total_cost_usd:.2f} exceeds --fail-over "
             f"{args.fail_over:.2f}",
             file=sys.stderr,
         )

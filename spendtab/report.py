@@ -48,7 +48,7 @@ def render(report: Report, top: int = 10, color: Optional[bool] = None, out=None
         color = stream.isatty() and os.environ.get("NO_COLOR") is None
 
     lines = []
-    lines.append(_paint("TokenTab — Claude Code spend audit", BOLD, color))
+    lines.append(_paint("SpendTab — Claude Code spend audit", BOLD, color))
     lines.append("")
     lines.append(f"root      {report.root}")
     lines.append(

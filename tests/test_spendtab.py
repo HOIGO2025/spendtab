@@ -7,11 +7,11 @@ from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
-from tokentab import parse as parse_module
-from tokentab.analyze import build_report, filter_sessions, parse_since
-from tokentab.cli import main
-from tokentab.parse import decode_project_dir, load_sessions
-from tokentab.report import render
+from spendtab import parse as parse_module
+from spendtab.analyze import build_report, filter_sessions, parse_since
+from spendtab.cli import main
+from spendtab.parse import decode_project_dir, load_sessions
+from spendtab.report import render
 
 
 def model(**overrides):
@@ -467,7 +467,7 @@ class CliTests(unittest.TestCase):
             code = main(["--root", self.root, "--json", "--no-color", "--no-cache"])
         self.assertEqual(code, 0)
         payload = json.loads(out.getvalue())
-        self.assertEqual(payload["tool"], "tokentab")
+        self.assertEqual(payload["tool"], "spendtab")
         self.assertAlmostEqual(payload["totals"]["cost_usd"], 12.5)
         self.assertEqual(payload["by_project"][0]["path"], "/home/me/cli")
 
@@ -477,7 +477,7 @@ class CliTests(unittest.TestCase):
             code = main(["--root", self.root, "--no-color", "--no-cache"])
         self.assertEqual(code, 0)
         text = out.getvalue()
-        self.assertIn("TokenTab", text)
+        self.assertIn("SpendTab", text)
         self.assertIn("$12.50", text)
         self.assertNotIn("\033[", text)
 

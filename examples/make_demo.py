@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Write synthetic Claude Code transcripts so TokenTab can be demoed safely.
+"""Write synthetic Claude Code transcripts so SpendTab can be demoed safely.
 
-    python3 examples/make_demo.py --dir /tmp/tokentab-demo
-    tokentab --root /tmp/tokentab-demo/projects --no-cache
+    python3 examples/make_demo.py --dir /tmp/spendtab-demo
+    spendtab --root /tmp/spendtab-demo/projects --no-cache
 
 No real session data is read or copied. Costs and paths are invented.
 """
@@ -130,7 +130,7 @@ FIXTURES = {
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dir", default="/tmp/tokentab-demo")
+    parser.add_argument("--dir", default="/tmp/spendtab-demo")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
 
@@ -154,9 +154,9 @@ def main(argv=None) -> int:
     print(root)
     print()
     print("Run:")
-    print(f"  tokentab --root {root} --no-cache --no-color")
-    print(f"  tokentab --root {root} --no-cache --json")
-    print(f"  tokentab --root {root} --no-cache --csv")
+    print(f"  spendtab --root {root} --no-cache --no-color")
+    print(f"  spendtab --root {root} --no-cache --json")
+    print(f"  spendtab --root {root} --no-cache --csv")
     return 0
 
 

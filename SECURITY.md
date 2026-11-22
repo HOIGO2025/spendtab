@@ -1,6 +1,6 @@
 # Security and privacy
 
-TokenTab runs locally and has no telemetry.
+SpendTab runs locally and has no telemetry.
 
 ## What it reads
 
@@ -12,11 +12,11 @@ TokenTab runs locally and has no telemetry.
 
 | Path | Contents |
 |---|---|
-| `~/.cache/tokentab/index.json` | Per-file derived metadata: project path, session id, model names, token counts, costs, durations. Keyed by mtime, size, and a head/tail fingerprint. |
-| `~/.config/tokentab/guard.json` | Budgets, dev label, optional webhook URL. Created by `guard init`. |
-| `~/.local/state/tokentab/ledger.jsonl` | One row per hook call: time, session id, project path, dev label, tool name, cumulative cost, delta, allow/warn/block decision. Pruned to 30 days when it passes 8 MB. |
+| `~/.cache/spendtab/index.json` | Per-file derived metadata: project path, session id, model names, token counts, costs, durations. Keyed by mtime, size, and a head/tail fingerprint. |
+| `~/.config/spendtab/guard.json` | Budgets, dev label, optional webhook URL. Created by `guard init`. |
+| `~/.local/state/spendtab/ledger.jsonl` | One row per hook call: time, session id, project path, dev label, tool name, cumulative cost, delta, allow/warn/block decision. Pruned to 30 days when it passes 8 MB. |
 
-Set `XDG_CACHE_HOME` / `TOKENTAB_STATE_DIR` / `TOKENTAB_GUARD_CONFIG` to move these.
+Set `XDG_CACHE_HOME` / `SPENDTAB_STATE_DIR` / `SPENDTAB_GUARD_CONFIG` to move these.
 
 ## Network
 
@@ -36,10 +36,10 @@ the tool-call decision or blocks work for more than the 1.5s timeout.
 The guard is a spending guardrail, not a sandbox. A project can disable hooks
 (`disableAllHooks`, `allowManagedHooksOnly`) or omit the settings snippet.
 PreToolUse does not fire for `@`-inlined files, and cost snapshots lag the work.
-Do not rely on TokenTab to contain a hostile process or to enforce policy against
+Do not rely on SpendTab to contain a hostile process or to enforce policy against
 a user who controls their own settings.
 
 ## Reporting a vulnerability
 
 Use GitHub's private security advisory for this repository. Do not open a public
-issue with exploit details. Include a minimal reproduction and the TokenTab version.
+issue with exploit details. Include a minimal reproduction and the SpendTab version.

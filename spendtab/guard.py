@@ -15,8 +15,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urlsplit
 
-CONFIG_ENV = "TOKENTAB_GUARD_CONFIG"
-STATE_ENV = "TOKENTAB_STATE_DIR"
+CONFIG_ENV = "SPENDTAB_GUARD_CONFIG"
+STATE_ENV = "SPENDTAB_STATE_DIR"
 TAIL_BYTES = 8 * 1024 * 1024
 LEDGER_MAX_BYTES = 8 * 1024 * 1024
 LEDGER_KEEP_DAYS = 30
@@ -112,13 +112,13 @@ def _webhook_url(value) -> Optional[str]:
 
 def config_path() -> str:
     return os.path.expanduser(
-        os.environ.get(CONFIG_ENV, "~/.config/tokentab/guard.json")
+        os.environ.get(CONFIG_ENV, "~/.config/spendtab/guard.json")
     )
 
 
 def ledger_path() -> str:
     return os.path.expanduser(
-        os.environ.get(STATE_ENV, "~/.local/state/tokentab") + "/ledger.jsonl"
+        os.environ.get(STATE_ENV, "~/.local/state/spendtab") + "/ledger.jsonl"
     )
 
 
@@ -471,7 +471,7 @@ def _same_project(a: str, b: str) -> bool:
 
 def block_message(decision: Decision) -> str:
     return (
-        "TokenTab guard: budget exceeded — "
+        "SpendTab guard: budget exceeded — "
         f"{decision.reason}. "
         "Raise the limit in the guard config, or start a new session with /clear. "
         "No tool call was run."
@@ -486,7 +486,7 @@ def render_check(decision: Decision) -> str:
     else:
         state = "ALLOW"
     lines = [
-        f"TokenTab guard: {state}",
+        f"SpendTab guard: {state}",
         f"session   ${decision.session_cost:,.2f} / ${decision.session_budget:,.2f}",
         f"project   ${decision.project_today:,.2f} / ${decision.project_budget:,.2f}  ({decision.project})",
         f"today     ${decision.day_today:,.2f} / ${decision.day_budget:,.2f}",
