@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -29,6 +30,7 @@ DEFAULT_PRICES = os.path.join(HERE, "prices.json")
 DEFAULT_CONFIG = "~/.config/spendtab/gemini-guard.json"
 DEFAULT_LEDGER = "~/.local/state/spendtab/gemini-usage.jsonl"
 MONEY_FIELDS = ("input", "output", "cached", "long_input", "long_output", "long_cached")
+DEDUPE_WINDOW_SECONDS = 2.0
 
 
 def _path(value: Optional[str], default: str) -> str:
@@ -155,6 +157,20 @@ def cost_for(model: str, usage: Dict, prices: Dict, when: datetime) -> Tuple[Opt
     return cost, tokens, long_context
 
 
+def _request_hash(request) -> Optional[str]:
+    """Hash the request so duplicate AfterModel fires can be recognized.
+
+    The prompt text is hashed locally; only the short hash is stored.
+    """
+    if not isinstance(request, dict):
+        return None
+    try:
+        canonical = json.dumps(request, sort_keys=True, separators=(",", ":"))
+    except (TypeError, ValueError):
+        return None
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+
+
 def event_from_hook(payload: Dict, prices: Dict, now: Optional[datetime] = None) -> Optional[Dict]:
     if not isinstance(payload, dict):
         return None
@@ -180,6 +196,7 @@ def event_from_hook(payload: Dict, prices: Dict, now: Optional[datetime] = None)
         "session_id": session_id,
         "project": project,
         "model": str(model or "unknown").split("/")[-1],
+        "request_hash": _request_hash(request),
         "cost_usd": round(cost, 9) if cost is not None else None,
         "priced": cost is not None,
         "long_context": long_context,
@@ -221,6 +238,56 @@ def read_events(path: str) -> List[Dict]:
                 event["cost_usd"] = cost
             events.append(event)
     return events
+
+
+def _event_time(event: Dict) -> float:
+    try:
+        parsed = datetime.fromisoformat(str(event.get("ts", "")).replace("Z", "+00:00"))
+        return parsed.timestamp()
+    except ValueError:
+        return 0.0
+
+
+def _event_tokens(event: Dict) -> int:
+    return sum(
+        _int(event.get(key))
+        for key in (
+            "prompt_tokens",
+            "cached_tokens",
+            "tool_tokens",
+            "candidate_tokens",
+            "thought_tokens",
+        )
+    )
+
+
+def dedupe_events(events: Iterable[Dict], window: float = DEDUPE_WINDOW_SECONDS) -> List[Dict]:
+    """Merge duplicate/partial AfterModel fires for one request.
+
+    Gemini CLI can fire AfterModel more than once for the same model request, with
+    cumulative usageMetadata. Keep the event with the largest token total when the
+    same session/model/request hash repeats inside the window.
+    """
+    ordered = sorted(events, key=_event_time)
+    result: List[Dict] = []
+    last_index: Dict[Tuple, int] = {}
+    for event in ordered:
+        request_hash = event.get("request_hash")
+        key = (
+            str(event.get("session_id", "")),
+            str(event.get("model", "")),
+            request_hash or "legacy",
+        )
+        index = last_index.get(key)
+        if index is not None:
+            previous = result[index]
+            if abs(_event_time(event) - _event_time(previous)) <= window:
+                if _event_tokens(event) >= _event_tokens(previous):
+                    result[index] = event
+                continue
+        last_index[key] = len(result)
+        result.append(event)
+    return result
 
 
 @dataclass
@@ -326,7 +393,11 @@ def handle_before_tool(
     )
     project = str(payload.get("cwd") or os.environ.get("GEMINI_CWD") or os.getcwd())
     allowed, reason, totals = evaluate_guard(
-        config, read_events(_path(ledger_path, DEFAULT_LEDGER)), session_id, project, now
+        config,
+        dedupe_events(read_events(_path(ledger_path, DEFAULT_LEDGER))),
+        session_id,
+        project,
+        now,
     )
     if dry_run:
         print(
@@ -355,7 +426,9 @@ def handle_before_tool(
 def build_report(events: Iterable[Dict], days: int = 7, now: Optional[datetime] = None) -> Dict:
     now = now or datetime.now().astimezone()
     cutoff = (now.astimezone().date() - timedelta(days=max(1, days) - 1)).isoformat()
-    selected = [e for e in events if str(e.get("day", "")) >= cutoff]
+    selected = [
+        e for e in dedupe_events(events) if str(e.get("day", "")) >= cutoff
+    ]
     by_day: Dict[str, Dict] = {}
     by_project: Dict[str, Dict] = {}
     by_model: Dict[str, Dict] = {}
@@ -464,6 +537,7 @@ def write_csv(report: Dict) -> None:
 def hook_snippet(script_path: str) -> Dict:
     command = f'python3 "{script_path}"'
     return {
+        "hooksConfig": {"enabled": True},
         "hooks": {
             "AfterModel": [
                 {
@@ -491,7 +565,7 @@ def hook_snippet(script_path: str) -> Dict:
                     ],
                 }
             ],
-        }
+        },
     }
 
 

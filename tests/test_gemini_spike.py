@@ -23,12 +23,18 @@ def usage(**overrides):
     return base
 
 
-def payload(model="gemini-2.5-pro", token_usage=None, session_id="s1", cwd="/work/app"):
+def payload(
+    model="gemini-2.5-pro",
+    token_usage=None,
+    session_id="s1",
+    cwd="/work/app",
+    timestamp="2026-11-23T12:00:00+00:00",
+):
     return {
         "session_id": session_id,
         "cwd": cwd,
         "hook_event_name": "AfterModel",
-        "timestamp": "2026-11-23T12:00:00+00:00",
+        "timestamp": timestamp,
         "llm_request": {
             "model": model,
             "messages": [{"role": "user", "content": "SECRET PROMPT"}],
@@ -209,6 +215,53 @@ class HookTests(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("project", err)
 
+    def test_duplicate_after_model_fires_are_merged(self):
+        # Gemini CLI fired AfterModel twice for one request; the second usage is
+        # cumulative (same prompt, one candidate, same thoughts).
+        first = payload(
+            model="gemini-3.5-flash-lite",
+            token_usage=usage(
+                promptTokenCount=8966,
+                cachedContentTokenCount=0,
+                candidatesTokenCount=0,
+                thoughtsTokenCount=280,
+            ),
+        )
+        second = payload(
+            model="gemini-3.5-flash-lite",
+            token_usage=usage(
+                promptTokenCount=8966,
+                cachedContentTokenCount=0,
+                candidatesTokenCount=1,
+                thoughtsTokenCount=280,
+            ),
+            timestamp="2026-11-23T12:00:00.050000+00:00",
+        )
+        self.after(first)
+        self.after(second)
+        raw = spike.read_events(self.ledger)
+        self.assertEqual(len(raw), 2)
+        report = spike.build_report(raw, now=NOW)
+        self.assertEqual(report["totals"]["events"], 1)
+        self.assertAlmostEqual(report["totals"]["cost_usd"], 0.003392, places=6)
+
+    def test_duplicate_fires_do_not_double_charge_guard(self):
+        self.write_config(session_budget_usd=0.003)
+        self.after(payload())
+        self.after(
+            payload(timestamp="2026-11-23T12:00:00.050000+00:00")
+        )
+        code, _, err = self.before({"session_id": "s1", "cwd": "/work/app"})
+        self.assertEqual(code, 0, err)
+
+    def test_legitimate_repeat_after_window_is_counted(self):
+        self.after(payload())
+        self.after(
+            payload(timestamp="2026-11-23T12:00:10+00:00")
+        )
+        report = spike.build_report(spike.read_events(self.ledger), now=NOW)
+        self.assertEqual(report["totals"]["events"], 2)
+
 
 class ReportTests(unittest.TestCase):
     def setUp(self):
@@ -242,6 +295,7 @@ class ReportTests(unittest.TestCase):
             code = spike.main(["init"])
         self.assertEqual(code, 0)
         config = json.loads(out.getvalue())
+        self.assertTrue(config["hooksConfig"]["enabled"])
         self.assertIn("AfterModel", config["hooks"])
         self.assertIn("BeforeTool", config["hooks"])
         self.assertIn("after-model", config["hooks"]["AfterModel"][0]["hooks"][0]["command"])

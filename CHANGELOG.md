@@ -10,8 +10,11 @@ the CLI and the JSON output schema. SpendTab was formerly TokenTab; entries befo
 
 - `prototype/gemini/`: experimental Gemini CLI spike. An `AfterModel` hook prices
   `usageMetadata` from a dated list-price table, a `BeforeTool` hook blocks on budget,
-  and `spike.py report` summarizes the ledger. Not shipped in the wheel; no support
-  commitment. Real-session verification is pending.
+  and `spike.py report` summarizes the ledger. Duplicate/cumulative AfterModel fires
+  are merged by request hash inside a 2-second window. Not shipped in the wheel; no
+  support commitment. Verified against a real Gemini CLI 0.70.0 session: tokens
+  matched `/stats` and the guard blocked a tool call. Google billing comparison still
+  pending.
 
 ## 0.3.0 — 2026-11-23
 

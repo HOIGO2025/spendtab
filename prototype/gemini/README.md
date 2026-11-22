@@ -20,9 +20,14 @@ Gemini CLI usage and blocking a tool call against a budget.
 # 1. Write a starter guard config (warn mode) and print the hook snippet.
 python3 prototype/gemini/spike.py init --write-config > /tmp/spendtab-gemini-hooks.json
 
-# 2. Merge the "hooks" object into .gemini/settings.json (project) or
-#    ~/.gemini/settings.json (all projects). The snippet uses absolute paths.
+# 2. Merge the "hooksConfig" and "hooks" objects into .gemini/settings.json
+#    (project) or ~/.gemini/settings.json (all projects). The snippet uses
+#    absolute paths.
 ```
+
+Project hooks are untrusted by default. Run Gemini CLI with `--skip-trust` or set
+`GEMINI_CLI_TRUST_WORKSPACE=true` for the session, otherwise the project settings and
+hooks are not applied. The starter includes `"hooksConfig": {"enabled": true}`.
 
 The generated snippet registers:
 
@@ -84,13 +89,31 @@ surcharges. Free-tier OAuth usage is $0 in reality; this table still shows a lis
 estimate. Before trusting numbers, compare against `/stats` and Google Cloud/API
 billing for one real session.
 
+## Verification status (2026-11-23)
+
+Real session on Gemini CLI 0.70.0 with `gemini-3.5-flash-lite`:
+
+- `/stats`: prompt 8980, candidates 1, thoughts 143, total 9124. The deduped ledger
+  event matched those three counts exactly; the report showed **$0.003054** at the
+  current standard list price.
+- `AfterModel` fired twice for one API request (46 ms apart) with cumulative usage.
+  Request-hash dedupe kept the final event; without it the cost tripled.
+- `BeforeTool` at a $0.001 session budget blocked a file-creation tool call; the file
+  was never created. Gemini logs the hook as "failed" because exit 2 is a system
+  block; that is expected.
+- Not verified: an actual Google billing line (depends on free/paid account), cached
+  input in a real session, long-context tiers, and tool-token edge cases.
+
 ## Limits
 
 - Hooks are still a newer Gemini CLI surface; field names can change. The spike fails
   open: a malformed payload or broken config allows the tool call.
-- `AfterModel` may fire once per model request, including intermediate tool steps; the
-  ledger sums all of them. A duplicated hook registration would double-count. Run one
-  hook per event.
+- `AfterModel` may fire more than once for one request, with cumulative
+  `usageMetadata` (observed: two fires 46 ms apart for a single API request). The
+  ledger keeps a request hash and report/guard merge repeats inside a 2-second
+  window, keeping the largest token total. A real duplicate request inside that
+  window would be undercounted; validate against `/stats` before trusting totals.
+- A duplicated hook registration would double-count. Run one hook per event.
 - Session budget is the sum of all ledger rows for that session. Project/day budgets
   use the event's local `day`.
 - No cross-machine aggregation, no GCP billing reconciliation.

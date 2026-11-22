@@ -1,4 +1,7 @@
 {
+  "hooksConfig": {
+    "enabled": true
+  },
   "hooks": {
     "AfterModel": [
       {
