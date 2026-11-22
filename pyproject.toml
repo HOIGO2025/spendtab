@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tokentab"
+version = "0.2.0"
+description = "Spend audit for Claude Code sessions: totals, projects, models, and waste signals."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "TokenTab contributors" }]
+keywords = ["claude-code", "cost", "tokens", "observability", "cli"]
+classifiers = [
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []
+
+[project.scripts]
+tokentab = "tokentab.cli:main"
+
+[tool.setuptools]
+packages = ["tokentab"]

@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Unit tests
+        run: python -m unittest discover -s tests -t . -v
+
+  package:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip wheel --no-deps -w /tmp/dist .
+      - name: Install and smoke test
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install /tmp/dist/*.whl
+          /tmp/venv/bin/tokentab --version
+          python examples/make_demo.py --dir /tmp/demo --force
+          /tmp/venv/bin/tokentab --root /tmp/demo/projects --no-cache --json > /tmp/report.json
+          python - <<'PY'
+          import json
+          data = json.load(open("/tmp/report.json"))
+          assert data["totals"]["cost_usd"] == 341.45, data["totals"]
+          assert data["totals"]["priced_sessions"] == 4, data["totals"]
+          print("report ok", data["totals"])
+          PY
+      - name: Guard smoke test
+        run: |
+          cat > /tmp/guard.json <<'JSON'
+          {"session_budget_usd": 1, "mode": "warn", "dev": "ci"}
+          JSON
+          cat > /tmp/session.jsonl <<'JSONL'
+          {"type": "cost-state", "sessionId": "s1", "totalCostUSD": 2.5}
+          JSONL
+          printf '%s' '{"session_id":"s1","cwd":"/tmp","tool_name":"Bash","transcript_path":"/tmp/session.jsonl"}' | /tmp/venv/bin/tokentab hook pretooluse --config /tmp/guard.json --ledger /tmp/ledger.jsonl --dry-run > /tmp/decision.json
+          python - <<'PY'
+          import json
+          decision = json.load(open("/tmp/decision.json"))
+          assert decision["allowed"] is True, decision
+          assert decision["reason"], decision
+          print("guard ok", decision["reason"])
+          PY

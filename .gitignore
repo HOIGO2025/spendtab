@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.DS_Store
+.omc/
+site/dist/
+site/site.json
+docs/archive/site/dist/
+docs/archive/site/site.json

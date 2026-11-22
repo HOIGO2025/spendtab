@@ -1,0 +1,52 @@
+name: Bug report
+description: Something in the scanner, guard, report, or CLI is wrong
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Do not paste real transcripts, prompts, project paths,
+        or costs. Use a synthetic reproduction. Security issues: use a private
+        security advisory instead.
+  - type: input
+    id: version
+    attributes:
+      label: TokenTab version
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python and OS
+      placeholder: "3.12.12 on macOS 27.2"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and flags
+      placeholder: "tokentab --since 7d --json"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the traceback or wrong output, with private data redacted.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Synthetic reproduction
+      description: A minimal JSONL fixture or steps using examples/make_demo.py.
+    validations:
+      required: false
