@@ -250,6 +250,13 @@ python3 -m unittest discover -s tests -t .
 
 The suite uses synthetic transcripts only.
 
+## Experimental: Gemini CLI spike
+
+`prototype/gemini/` contains an isolated feasibility spike for Gemini CLI: AfterModel
+usage ledger, list-price cost estimate, BeforeTool budget block, and a report. It is
+not shipped in the wheel and has no support commitment. See
+`prototype/gemini/README.md` for the hook setup and cost-model limits.
+
 ## Contributing
 
 MIT-licensed contributions are welcome. Read `CONTRIBUTING.md` first: never commit

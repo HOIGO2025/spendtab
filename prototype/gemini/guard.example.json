@@ -1,0 +1,6 @@
+{
+  "session_budget_usd": 5.0,
+  "daily_budget_usd": 25.0,
+  "project_daily_budget_usd": 15.0,
+  "mode": "warn"
+}

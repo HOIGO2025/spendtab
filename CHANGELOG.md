@@ -4,6 +4,15 @@ All notable changes are recorded here. The project follows semantic versioning f
 the CLI and the JSON output schema. SpendTab was formerly TokenTab; entries before
 0.3.0 use the old name.
 
+## Unreleased
+
+### Added
+
+- `prototype/gemini/`: experimental Gemini CLI spike. An `AfterModel` hook prices
+  `usageMetadata` from a dated list-price table, a `BeforeTool` hook blocks on budget,
+  and `spike.py report` summarizes the ledger. Not shipped in the wheel; no support
+  commitment. Real-session verification is pending.
+
 ## 0.3.0 — 2026-11-23
 
 ### Changed

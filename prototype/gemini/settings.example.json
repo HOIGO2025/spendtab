@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "AfterModel": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "spendtab-gemini-cost",
+            "type": "command",
+            "command": "python3 \"/ABSOLUTE/PATH/TO/prototype/gemini/spike.py\" after-model",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "BeforeTool": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "spendtab-gemini-guard",
+            "type": "command",
+            "command": "python3 \"/ABSOLUTE/PATH/TO/prototype/gemini/spike.py\" before-tool",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
