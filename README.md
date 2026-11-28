@@ -45,6 +45,12 @@ Findings
 
 Sample output uses synthetic transcripts.
 
+## Open core
+
+The CLI, the guard, and the local ledger are MIT and complete on their own. A future
+hosted team layer (multi-machine sync, alert routing, retention) may be paid; nothing
+in the open core depends on it. See `docs/open-core.md`.
+
 ## Install
 
 Requires Python 3.9+. No third-party dependencies.

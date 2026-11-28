@@ -4,7 +4,14 @@ All notable changes are recorded here. The project follows semantic versioning f
 the CLI and the JSON output schema. SpendTab was formerly TokenTab; entries before
 0.3.0 use the old name.
 
-## Unreleased
+## 0.4.0 — 2026-11-29
+
+### Changed
+
+- Repository is public again under MIT, with PyPI packaging metadata (project URLs,
+  Python 3.9–3.13 classifiers) and `docs/open-core.md` describing the boundary between
+  the free CLI core and a possible hosted team layer.
+- Version raised to 0.4.0; no CLI or JSON schema changes since 0.3.0.
 
 ### Added
 

@@ -8,3 +8,9 @@ build/
 .omc/
 site/dist/
 site/site.json
+
+# local-only
+.claude/
+.playwright-cli/
+ops/
+dist/

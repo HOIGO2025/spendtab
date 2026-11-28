@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spendtab"
-version = "0.3.0"
+version = "0.4.0"
 description = "Spend audit and budget guard for Claude Code sessions."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -16,9 +16,22 @@ classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "Typing :: Typed",
   "Topic :: Software Development :: Quality Assurance",
 ]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/HOIGO2025/spendtab"
+Repository = "https://github.com/HOIGO2025/spendtab"
+Issues = "https://github.com/HOIGO2025/spendtab/issues"
+Changelog = "https://github.com/HOIGO2025/spendtab/blob/main/CHANGELOG.md"
 
 [project.scripts]
 spendtab = "spendtab.cli:main"
